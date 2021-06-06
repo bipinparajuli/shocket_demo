@@ -7,50 +7,71 @@
 </head>
 
 <body>
-<ul id="messege">
+    <p><em id="typeMessege"></em></p>
+<div id="messege">
 
-</ul>
+</div>
 
-<form id="form" action="">
-    <input type="text" id="input">
-    <button>Send</button>
-</form>
+
+    <input type="text" id="username">
+    <input type="text" id="input" onkeypress="myFunction()">
+    <button id="form">Send</button>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-  var socket = io();
+  var socket = io.connect("http://localhost:8000");
 
+  //INTERACTING WITH DOM
   const form = document.getElementById("form");
     const input = document.getElementById("input");
     const messege = document.getElementById("messege");
+    const typing =  document.getElementById("typeMessege");
+    const name =  document.getElementById("username");
 
-form.addEventListener("submit",(e)=>{
-e.preventDefault();
-if(input.value)
-{
-    socket.emit("chat messege",input.value);
-    input.value = "";
+
+
+
+//TYPING 
+function myFunction(){
+// console.log("typing");
+socket.emit("typing",name.value)
 
 }
 
-// socket.on("chat messege",(msg)=>{
-//     console.log(msg)
-//     let li = document.createElement("li");
-//     li.textContent=msg;
-//     messege.appendChild(li);
-// })
-
-
-socket.on("chat messege",(msg)=>{
-    console.log(msg)
-        var item = document.createElement('li');
-        item.textContent = msg;
-        messege.appendChild(item);
-        // window.scrollTo(0, document.body.scrollHeight);
-      })
+//RECEVING
+socket.on("typing",(msg)=>{
+console.log(typing);
+typing.innerHTML = `${msg} is typing`;
 
 
 })
+
+
+    //FORM HANDING
+form.addEventListener("click",function(){
+
+    socket.emit("chat",{
+messege:input.value,
+user:name.value
+    });
+    input.value = "";
+    // name.value = "";
+
+})
+
+//RECEVING
+socket.on("chat",function(msg){
+    console.log(msg)
+    typing.innerHTML = "";
+    messege.innerHTML += `<p><strong>${msg.user} : ${msg.messege}`;
+
+      })
+
+
+
+
+
+
 
 
 </script>
